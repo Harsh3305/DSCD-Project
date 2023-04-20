@@ -20,3 +20,6 @@ class CustomIO:
         file = open(full_url, "a")
         file.writelines(file_content)
         file.close()
+
+    def get_all_files_in_path(self, path):
+        return os.listdir(path)
