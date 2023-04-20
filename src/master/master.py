@@ -1,9 +1,10 @@
 import os
 from src.communication.send_data_to_mapper import MapperCommunication
+from src.file_read.reader import CustomIO
 from src.logging.logging import Logging
 
 
-class Master(MapperCommunication, Logging):
+class Master(MapperCommunication, Logging, CustomIO):
     def __init__(
             self,
             input_dir: str,
@@ -20,15 +21,22 @@ class Master(MapperCommunication, Logging):
         self.output_dir = output_dir
 
     def process_data(self):
-        files_in_path = os.listdir(self.input_dir)
-        for current_file_path in files_in_path:
-            self._send_input_file_address_to_mapper(self.input_dir+"/"+current_file_path)
+        files_in_path = self.get_all_files_in_path(self.input_dir)
+        mapper_files = []
+        for _ in range(len(self.mapper_addresses)):
+            mapper_files.append([])
 
-    def _send_input_file_address_to_mapper(self, file_path):
-        address_of_mapper = self.mapper_addresses[self._round_robin_index]
+        for current_file in files_in_path:
+            mapper_files[self._round_robin_index].append(current_file)
+            self._increment_round_robin_index()
+
+        self._send_input_file_address_to_mapper(mapper_files)
+
+    def _send_input_file_address_to_mapper(self, file_path: list):
+        for i in range(len(self.mapper_addresses)):
+            self.send_data_to_mapper(
+                mapper_address=self.mapper_addresses[i],
+                input_file_path=file_path[i]
+            )
+    def _increment_round_robin_index(self):
         self._round_robin_index = (self._round_robin_index + 1) % len(self.mapper_addresses)
-
-        self.send_data_to_mapper(
-            mapper_address=address_of_mapper,
-            input_file_path=file_path
-        )
