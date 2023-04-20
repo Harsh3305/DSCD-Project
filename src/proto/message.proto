@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package greet;
+
+service Mapper {
+  // Unary
+  rpc SendFileLocation (MapperRequest) returns (MapperReply);
+
+}
+message MapperRequest {
+  string file_name = 1;
+}
+message MapperReply {
+  string file_name = 1;
+}
