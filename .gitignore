@@ -2,3 +2,5 @@
 /.idea
 AProject.iml
 **/__pycache__
+intermediate
+output
