@@ -37,5 +37,6 @@ class Master(MapperCommunication, CustomLogging, CustomIO):
                 mapper_address=self.mapper_addresses[i],
                 input_file_path=file_path[i]
             )
+
     def _increment_round_robin_index(self):
         self._round_robin_index = (self._round_robin_index + 1) % len(self.mapper_addresses)
