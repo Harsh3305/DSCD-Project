@@ -43,14 +43,24 @@ class Mapper(CustomLogging, CustomIO, message_pb2_grpc.MapperServicer):
 
     def split_into_words(self, data: str, file_index: int):
         paragraph = data.split("\n")
+        content = {}
         for line in paragraph:
             for word in line.split(" "):
-                self._store_in_intermediate_file(word=word.lower(), file_index=file_index)
+                a = f"{word} {file_index}"
+                if not a in content:
+                    content[a] = ""
+        data = ""
+        for x in content.keys():
+            if len(data) == 0:
+                data += x
+            else:
+                data += f"\n{x}"
+        self._store_in_intermediate_file(content=data)
 
-    def _store_in_intermediate_file(self, word: str, file_index: int):
+    def _store_in_intermediate_file(self, content: str):
         self.write_file(
             file_name=f"Intermediate{self.index}.txt",
-            content=f"{word} {file_index}",
+            content=content,
             base_url=self.intermediate_file
         )
 

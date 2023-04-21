@@ -45,10 +45,12 @@ class Master(MapperCommunication, CustomLogging, CustomIO):
             )
 
     def _send_data_to_reducer(self):
+        index = 0
         for reducer_address in self.reducer_addresses:
+            index += 1
             self.send_data_to_mapper(
                 mapper_address=reducer_address,
-                input_file_path=[]
+                input_file_path=[f"{index}", f"{len(self.reducer_addresses)}"]
             )
 
     def _increment_round_robin_index(self):
