@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-class Logging:
+class CustomLogging:
     def log(self, logging_data):
         time = str(datetime.now())
         print("---------------------")

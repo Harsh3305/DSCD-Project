@@ -1,8 +1,8 @@
 from src.file_read.reader import CustomIO
-from src.logging.logging import Logging
+from src.logging.customlogging import CustomLogging
 
 
-class Reducer(CustomIO, Logging):
+class Reducer(CustomIO, CustomLogging):
     def __init__(
             self,
             address: str,

@@ -1,7 +1,7 @@
-from src.logging.logging import Logging
+from src.logging.customlogging import CustomLogging
 
 
-class MapperCommunication(Logging):
+class MapperCommunication(CustomLogging):
     def send_data_to_mapper(self, mapper_address: str, input_file_path: list):
         self.log({
             "map address": mapper_address,

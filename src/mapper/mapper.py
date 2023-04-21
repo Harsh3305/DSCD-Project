@@ -1,8 +1,8 @@
 from src.file_read.reader import CustomIO
-from src.logging.logging import Logging
+from src.logging.customlogging import CustomLogging
 
 
-class Mapper(Logging, CustomIO):
+class Mapper(CustomLogging, CustomIO):
     def __init__(
             self,
             address: str,
