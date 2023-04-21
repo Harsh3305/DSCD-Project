@@ -19,12 +19,12 @@ class Mapper(CustomLogging, CustomIO, message_pb2_grpc.MapperServicer):
         self.input_file_path = input_file_path
         self.intermediate_file = intermediate_file_path
         self.index = index
-        self._serve_request(self.address)
+        self._serve_request()
 
-    def _serve_request(self, mapper_address):
+    def _serve_request(self):
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         message_pb2_grpc.add_MapperServicer_to_server(self, server=server)
-        server.add_insecure_port(mapper_address)
+        server.add_insecure_port(self.address)
         server.start()
         server.wait_for_termination()
 
