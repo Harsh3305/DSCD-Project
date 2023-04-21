@@ -1,8 +1,13 @@
+from concurrent import futures
+import grpc
+
+import message_pb2
+import message_pb2_grpc
 from reader import CustomIO
 from customlogging import CustomLogging
 
 
-class Reducer(CustomIO, CustomLogging):
+class Reducer(CustomIO, CustomLogging, message_pb2_grpc.MapperServicer):
     def __init__(
             self,
             address: str,
@@ -15,6 +20,20 @@ class Reducer(CustomIO, CustomLogging):
         self.output_file_path = output_file_path
         self.index = index
         self.invert_index = {}
+        self._serve_request()
+
+    def _serve_request(self):
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        message_pb2_grpc.add_MapperServicer_to_server(self, server=server)
+        server.add_insecure_port(self.address)
+        server.start()
+        server.wait_for_termination()
+
+    def SendFileLocation(self, request, context):
+        self.log(request)
+        mapper_reply = message_pb2.MapperReply()
+        self.process_files()
+        return mapper_reply
 
     def process_files(self):
         files = self.get_all_files_in_path(self.intermediate_file_path)
@@ -63,7 +82,7 @@ class Reducer(CustomIO, CustomLogging):
 
 
 if __name__ == "__main__":
-    reduce_address = "localhost:8080"
+    reduce_address = "localhost:3000"
     reduce_input_file_path = "/home/harsh/Project/DSCD/DSCD-Project/output"
     reduce_intermediate_file_path = "/home/harsh/Project/DSCD/DSCD-Project/intermediate"
     reduce = Reducer(
