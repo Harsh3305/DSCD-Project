@@ -1,10 +1,14 @@
+from concurrent import futures
+import grpc
+
+import message_pb2
 import message_pb2_grpc
 from reader import CustomIO
 from customlogging import CustomLogging
 from send_data_to_mapper import MapperCommunication
 
 
-class Mapper(CustomLogging, CustomIO, MapperCommunication):
+class Mapper(CustomLogging, CustomIO, MapperCommunication, message_pb2_grpc.MapperServicer):
     def __init__(
             self,
             address: str,
@@ -16,13 +20,27 @@ class Mapper(CustomLogging, CustomIO, MapperCommunication):
         self.input_file_path = input_file_path
         self.intermediate_file = intermediate_file_path
         self.index = index
+        self._serve_request(self.address)
+
+    def _serve_request(self, mapper_address):
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        message_pb2_grpc.add_MapperServicer_to_server(self, server=server)
+        server.add_insecure_port(mapper_address)
+        server.start()
+        server.wait_for_termination()
 
     def process(self, files_name: list):
-        self.serve_request(self.address)
-        # for file_name in files_name:
-        #     data = self.read_file(file_name=file_name, base_url=self.input_file_path)
-        #     file_index = self._get_file_index(file_name=file_name)
-        #     self.split_into_words(data=data, file_index=file_index)
+        for file_name in files_name:
+            data = self.read_file(file_name=file_name, base_url=self.input_file_path)
+            file_index = self._get_file_index(file_name=file_name)
+            self.split_into_words(data=data, file_index=file_index)
+
+    def SendFileLocation(self, request, context):
+        files_name = request.file_name.split(" ")
+        self.log(request)
+        mapper_reply = message_pb2.MapperReply()
+        self.process(files_name=files_name)
+        return mapper_reply
 
     def split_into_words(self, data: str, file_index: int):
         paragraph = data.split("\n")
@@ -53,4 +71,3 @@ if __name__ == "__main__":
         intermediate_file_path=mapper_intermediate_file_path,
         index=1
     )
-    m.process(["Input1.txt", "Input2.txt"])
