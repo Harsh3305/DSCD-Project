@@ -5,10 +5,9 @@ import message_pb2
 import message_pb2_grpc
 from reader import CustomIO
 from customlogging import CustomLogging
-from send_data_to_mapper import MapperCommunication
 
 
-class Mapper(CustomLogging, CustomIO, MapperCommunication, message_pb2_grpc.MapperServicer):
+class Mapper(CustomLogging, CustomIO, message_pb2_grpc.MapperServicer):
     def __init__(
             self,
             address: str,
