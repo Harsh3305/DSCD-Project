@@ -1,5 +1,5 @@
-from src.file_read.reader import CustomIO
-from src.logging.customlogging import CustomLogging
+from reader import CustomIO
+from customlogging import CustomLogging
 
 
 class Reducer(CustomIO, CustomLogging):
@@ -64,8 +64,8 @@ class Reducer(CustomIO, CustomLogging):
 
 if __name__ == "__main__":
     reduce_address = "localhost:8080"
-    reduce_input_file_path = "/home/harsh/Project/DSCD/AProject/output"
-    reduce_intermediate_file_path = "/home/harsh/Project/DSCD/AProject/intermediate"
+    reduce_input_file_path = "/home/harsh/Project/DSCD/DSCD-Project/output"
+    reduce_intermediate_file_path = "/home/harsh/Project/DSCD/DSCD-Project/intermediate"
     reduce = Reducer(
         address=reduce_address,
         intermediate_file_path=reduce_intermediate_file_path,

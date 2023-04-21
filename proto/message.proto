@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package greet;
+package mapper;
 
 service Mapper {
   // Unary
@@ -11,5 +11,4 @@ message MapperRequest {
   string file_name = 1;
 }
 message MapperReply {
-  string file_name = 1;
 }

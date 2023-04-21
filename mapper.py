@@ -1,8 +1,10 @@
-from src.file_read.reader import CustomIO
-from src.logging.customlogging import CustomLogging
+import message_pb2_grpc
+from reader import CustomIO
+from customlogging import CustomLogging
+from send_data_to_mapper import MapperCommunication
 
 
-class Mapper(CustomLogging, CustomIO):
+class Mapper(CustomLogging, CustomIO, MapperCommunication):
     def __init__(
             self,
             address: str,
@@ -16,10 +18,11 @@ class Mapper(CustomLogging, CustomIO):
         self.index = index
 
     def process(self, files_name: list):
-        for file_name in files_name:
-            data = self.read_file(file_name=file_name, base_url=self.input_file_path)
-            file_index = self._get_file_index(file_name=file_name)
-            self.split_into_words(data=data, file_index=file_index)
+        self.serve_request(self.address)
+        # for file_name in files_name:
+        #     data = self.read_file(file_name=file_name, base_url=self.input_file_path)
+        #     file_index = self._get_file_index(file_name=file_name)
+        #     self.split_into_words(data=data, file_index=file_index)
 
     def split_into_words(self, data: str, file_index: int):
         paragraph = data.split("\n")
@@ -42,8 +45,8 @@ class Mapper(CustomLogging, CustomIO):
 
 if __name__ == "__main__":
     mapper_address = "localhost:8080"
-    mapper_input_file_path = "/home/harsh/Project/DSCD/AProject/input"
-    mapper_intermediate_file_path = "/home/harsh/Project/DSCD/AProject/intermediate"
+    mapper_input_file_path = "/home/harsh/Project/DSCD/DSCD-Project/input"
+    mapper_intermediate_file_path = "/home/harsh/Project/DSCD/DSCD-Project/intermediate"
     m = Mapper(
         address=mapper_address,
         input_file_path=mapper_input_file_path,

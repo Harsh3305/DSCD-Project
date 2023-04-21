@@ -1,7 +1,6 @@
-import os
-from src.communication.send_data_to_mapper import MapperCommunication
-from src.file_read.reader import CustomIO
-from src.logging.customlogging import CustomLogging
+from send_data_to_mapper import MapperCommunication
+from reader import CustomIO
+from customlogging import CustomLogging
 
 
 class Master(MapperCommunication, CustomLogging, CustomIO):
