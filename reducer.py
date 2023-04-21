@@ -82,13 +82,14 @@ class Reducer(CustomIO, CustomLogging, message_pb2_grpc.MapperServicer):
 
 
 if __name__ == "__main__":
-    reduce_address = "localhost:3000"
+    reduce_address = input("Enter reducer address: ")
+    index = int(input("Enter id of reducer (eg 1): "))
     reduce_input_file_path = "/home/harsh/Project/DSCD/DSCD-Project/output"
     reduce_intermediate_file_path = "/home/harsh/Project/DSCD/DSCD-Project/intermediate"
     reduce = Reducer(
         address=reduce_address,
         intermediate_file_path=reduce_intermediate_file_path,
         output_file_path=reduce_input_file_path,
-        index=1
+        index=index
     )
     reduce.process_files()

@@ -61,12 +61,13 @@ class Mapper(CustomLogging, CustomIO, message_pb2_grpc.MapperServicer):
 
 
 if __name__ == "__main__":
-    mapper_address = "localhost:8080"
+    mapper_address = input("Enter mapper address: ")
+    index = int(input("Enter id of mapper (eg 1): "))
     mapper_input_file_path = "/home/harsh/Project/DSCD/DSCD-Project/input"
     mapper_intermediate_file_path = "/home/harsh/Project/DSCD/DSCD-Project/intermediate"
     m = Mapper(
         address=mapper_address,
         input_file_path=mapper_input_file_path,
         intermediate_file_path=mapper_intermediate_file_path,
-        index=1
+        index=index
     )
