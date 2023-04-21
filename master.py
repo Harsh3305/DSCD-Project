@@ -1,3 +1,5 @@
+import time
+
 from send_data_to_mapper import MapperCommunication
 from reader import CustomIO
 from customlogging import CustomLogging
@@ -17,6 +19,7 @@ class Master(MapperCommunication, CustomLogging, CustomIO):
         self.number_of_mapper = len(mapper_addresses)
         self.mapper_addresses = mapper_addresses
         self.number_of_reducer = len(reducer_addresses)
+        self.reducer_addresses = reducer_addresses
         self.output_dir = output_dir
 
     def process_data(self):
@@ -30,12 +33,22 @@ class Master(MapperCommunication, CustomLogging, CustomIO):
             self._increment_round_robin_index()
 
         self._send_input_file_address_to_mapper(mapper_files)
+        self.log("Mapper jobs are done")
+        self._send_data_to_reducer()
+        self.log("Reducer jobs are done")
 
     def _send_input_file_address_to_mapper(self, file_path: list):
         for i in range(len(self.mapper_addresses)):
             self.send_data_to_mapper(
                 mapper_address=self.mapper_addresses[i],
                 input_file_path=file_path[i]
+            )
+
+    def _send_data_to_reducer(self):
+        for reducer_address in self.reducer_addresses:
+            self.send_data_to_mapper(
+                mapper_address=reducer_address,
+                input_file_path=[]
             )
 
     def _increment_round_robin_index(self):
