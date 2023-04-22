@@ -8,7 +8,7 @@ from reader import CustomIO
 from customlogging import CustomLogging
 
 
-class Reducer(CustomIO, CustomLogging, message_pb2_grpc.MapperServicer):
+class Reducer(CustomIO, CustomLogging, message_pb2_grpc.ReducerServicer):
     def __init__(
             self,
             address: str,
@@ -16,6 +16,7 @@ class Reducer(CustomIO, CustomLogging, message_pb2_grpc.MapperServicer):
             output_file_path: str,
             index: int
     ):
+        self.file_pattern = None
         self.address = address
         self.intermediate_file_path = intermediate_file_path
         self.output_file_path = output_file_path
@@ -27,56 +28,38 @@ class Reducer(CustomIO, CustomLogging, message_pb2_grpc.MapperServicer):
 
     def _serve_request(self):
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-        message_pb2_grpc.add_MapperServicer_to_server(self, server=server)
+        message_pb2_grpc.add_ReducerServicer_to_server(self, server=server)
         server.add_insecure_port(self.address)
         server.start()
         server.wait_for_termination()
 
-    def SendFileLocation(self, request, context):
-        payload = request.file_name.split(" ")
-        self.current_index = int(payload[0])
-        self.total_size = int(payload[1])
+    def SendFilePattern(self, request, context):
+        self.file_pattern = request.file_name_pattern
         self.log(request)
-        mapper_reply = message_pb2.MapperReply()
+        mapper_reply = message_pb2.ReducerReply()
         self.process_files()
+        self.log(f"Reducer-{self.index} job is done")
         return mapper_reply
 
     def process_files(self):
         files = self.get_all_files_in_path(self.intermediate_file_path)
         for file in files:
-            self.process_file(file_name=file)
+            self.process_file(file_partition_path=file)
         self._store_data_in_file()
 
-    def process_file(self, file_name: str):
-        content = self.read_file(base_url=self.intermediate_file_path, file_name=file_name).split("\n")
+    def process_file(self, file_partition_path: str):
+        content = self.read_file(
+            base_url=f"{self.intermediate_file_path}/{file_partition_path}",
+            file_name=self.file_pattern
+        ).split("\n")
         self.shuffle_and_sort(content)
-        lower_limit, upper_limit = self._partition_intermediate_file_limits(size_of_file=len(content))
-        content = content[lower_limit: upper_limit]
         for data_entry in content:
             data_entry = data_entry.split(" ")
-            self._save_inverted_index(data_entry[0], data_entry[1])
-        self._store_data_in_file()
+            try:
+                self._save_inverted_index(data_entry[0], data_entry[1])
+            except Exception as _:
+                self.log(f"{file_partition_path}/{self.file_pattern}.txt file is empty")
 
-    def _partition_intermediate_file_limits(self, size_of_file):
-        lower_limit = 0
-        upper_limit = 0
-        if size_of_file < self.total_size:
-            if self.current_index == self.total_size:
-                lower_limit = 0
-                upper_limit = size_of_file
-        elif size_of_file % self.total_size == 0:
-            window_size = int(size_of_file / self.total_size)
-            lower_limit = (self.current_index - 1) * window_size
-            upper_limit = self.current_index * window_size
-        else:
-            window_size = math.floor(size_of_file / self.total_size)
-            if index == self.total_size:
-                lower_limit = (self.current_index - 1) * window_size
-                upper_limit = size_of_file
-            else:
-                lower_limit = (self.current_index - 1) * window_size
-                upper_limit = self.current_index * window_size
-        return lower_limit, upper_limit
 
     def shuffle_and_sort(self, content: list):
         content.sort()
