@@ -34,25 +34,26 @@ class Master(MapperCommunication, CustomLogging, CustomIO):
 
         self._send_input_file_address_to_mapper(mapper_files, self.number_of_reducer)
         self.log("Mapper jobs are done")
-        # self._send_data_to_reducer()
-        # self.log("Reducer jobs are done")
+        self._send_data_to_reducer()
+        self.log("Reducer jobs are done")
 
     def _send_input_file_address_to_mapper(self, file_path: list, number_of_reducers: int):
-        for i in range(len(self.mapper_addresses)):
-            self.send_data_to_mapper(
-                mapper_address=self.mapper_addresses[i],
-                input_file_path=file_path[i],
-                number_of_reducer=number_of_reducers
-            )
+        for i in range(self.number_of_mapper):
+            if len(file_path[i]) > 0:
+                self.send_data_to_mapper(
+                    mapper_address=self.mapper_addresses[i],
+                    input_file_path=file_path[i],
+                    number_of_reducer=number_of_reducers
+                )
 
     def _send_data_to_reducer(self):
         index = 0
         for reducer_address in self.reducer_addresses:
-            index += 1
-            self.send_data_to_mapper(
-                mapper_address=reducer_address,
-                input_file_path=[f"{index}", f"{len(self.reducer_addresses)}"]
+            self.send_data_to_reducer(
+                reducer_address=reducer_address,
+                file_name_pattern=f"Intermediate{index}.txt"
             )
+            index += 1
 
     def _increment_round_robin_index(self):
         self._round_robin_index = (self._round_robin_index + 1) % len(self.mapper_addresses)
