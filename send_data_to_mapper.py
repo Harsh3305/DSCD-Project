@@ -6,7 +6,7 @@ from customlogging import CustomLogging
 
 
 class MapperCommunication:
-    def send_data_to_mapper(self, mapper_address: str, input_file_path: list):
+    def send_data_to_mapper(self, mapper_address: str, input_file_path: list, number_of_reducer: int):
         file_name = ""
         for file in input_file_path:
             if len(file_name) == 0:
@@ -16,7 +16,7 @@ class MapperCommunication:
 
         with grpc.insecure_channel(mapper_address) as channel:
             stub = message_pb2_grpc.MapperStub(channel)
-            message_request = message_pb2.MapperRequest(file_name=file_name)
+            message_request = message_pb2.MapperRequest(file_name=file_name, number_of_reducers=number_of_reducer)
             message_reply = stub.SendFileLocation(message_request)
             CustomLogging().log({
                 "map address": mapper_address,

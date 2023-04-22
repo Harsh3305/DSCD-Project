@@ -32,16 +32,17 @@ class Master(MapperCommunication, CustomLogging, CustomIO):
             mapper_files[self._round_robin_index].append(current_file)
             self._increment_round_robin_index()
 
-        self._send_input_file_address_to_mapper(mapper_files)
+        self._send_input_file_address_to_mapper(mapper_files, self.number_of_reducer)
         self.log("Mapper jobs are done")
-        self._send_data_to_reducer()
-        self.log("Reducer jobs are done")
+        # self._send_data_to_reducer()
+        # self.log("Reducer jobs are done")
 
-    def _send_input_file_address_to_mapper(self, file_path: list):
+    def _send_input_file_address_to_mapper(self, file_path: list, number_of_reducers: int):
         for i in range(len(self.mapper_addresses)):
             self.send_data_to_mapper(
                 mapper_address=self.mapper_addresses[i],
-                input_file_path=file_path[i]
+                input_file_path=file_path[i],
+                number_of_reducer=number_of_reducers
             )
 
     def _send_data_to_reducer(self):
