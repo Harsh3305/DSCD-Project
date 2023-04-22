@@ -68,9 +68,9 @@ class Mapper(CustomLogging, CustomIO, message_pb2_grpc.MapperServicer):
             else:
                 data += "\n"+entry
         self.write_file(
-            file_name=f"Intermediate{self.index}.txt",
+            file_name=f"Intermediate{reducer_index}.txt",
             content=data,
-            base_url=f"{self.intermediate_file}/{reducer_index}"
+            base_url=f"{self.intermediate_file}/{self.index}"
         )
 
     def _get_file_index(self, file_name: str) -> int:
