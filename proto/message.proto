@@ -5,11 +5,18 @@ package mapper;
 service Mapper {
   // Unary
   rpc SendFileLocation (MapperRequest) returns (MapperReply);
-
+}
+service Reducer {
+  rpc SendFilePattern (ReducerRequest) returns (ReducerReply);
 }
 message MapperRequest {
   string file_name = 1;
   int64 number_of_reducers = 2;
 }
 message MapperReply {
+}
+message ReducerRequest{
+  string file_name_pattern = 1;
+}
+message ReducerReply{
 }
