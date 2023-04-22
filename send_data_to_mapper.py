@@ -24,3 +24,14 @@ class MapperCommunication:
             })
             return message_reply
 
+    def send_data_to_reducer(self, reducer_address: str, file_name_pattern: str):
+        with grpc.insecure_channel(reducer_address) as channel:
+            stub = message_pb2_grpc.ReducerStub(channel=channel)
+            message_request = message_pb2.ReducerRequest(file_name_pattern=file_name_pattern)
+            message_reply = stub.SendFilePattern(message_request)
+
+            CustomLogging().log({
+                "reduce address": reducer_address,
+                "file name pattern": file_name_pattern
+            })
+            return message_reply
