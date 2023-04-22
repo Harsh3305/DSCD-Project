@@ -15,6 +15,7 @@ class Mapper(CustomLogging, CustomIO, message_pb2_grpc.MapperServicer):
             intermediate_file_path: str,
             index: int
     ):
+        self._number_of_reducers = 1
         self.address = address
         self.input_file_path = input_file_path
         self.intermediate_file = intermediate_file_path
@@ -36,32 +37,40 @@ class Mapper(CustomLogging, CustomIO, message_pb2_grpc.MapperServicer):
 
     def SendFileLocation(self, request, context):
         files_name = request.file_name.split(" ")
+        self._number_of_reducers = request.number_of_reducers
         self.log(request)
         mapper_reply = message_pb2.MapperReply()
         self.process(files_name=files_name)
         return mapper_reply
 
+    def _partition_function(self, word: str):
+        return len(word) % self._number_of_reducers
+
     def split_into_words(self, data: str, file_index: int):
         paragraph = data.split("\n")
-        content = {}
+        content = []
+        for _ in range(self._number_of_reducers):
+            content.append([])
         for line in paragraph:
             for word in line.split(" "):
-                a = f"{word} {file_index}"
-                if not a in content:
-                    content[a] = ""
-        data = ""
-        for x in content.keys():
-            if len(data) == 0:
-                data += x
-            else:
-                data += f"\n{x}"
-        self._store_in_intermediate_file(content=data)
+                partition_index = self._partition_function(word=word)
+                content[partition_index].append(f"{word} {file_index}")
 
-    def _store_in_intermediate_file(self, content: str):
+        for reducer_index in range(self._number_of_reducers):
+            data = content[reducer_index]
+            self._store_in_intermediate_file(content=data, reducer_index=reducer_index)
+
+    def _store_in_intermediate_file(self, content: list, reducer_index: int):
+        data = ""
+        for entry in content:
+            if len(data) == 0:
+                data = entry
+            else:
+                data += "\n"+entry
         self.write_file(
             file_name=f"Intermediate{self.index}.txt",
-            content=content,
-            base_url=self.intermediate_file
+            content=data,
+            base_url=f"{self.intermediate_file}/{reducer_index}"
         )
 
     def _get_file_index(self, file_name: str) -> int:
