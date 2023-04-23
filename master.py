@@ -1,7 +1,7 @@
 import threading
 import time
 
-from send_data_to_mapper import MapperCommunication
+from send_data_to_workers import MapperCommunication
 from reader import CustomIO
 from customlogging import CustomLogging
 
