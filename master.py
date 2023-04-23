@@ -62,6 +62,7 @@ class Master(MapperCommunication, CustomLogging, CustomIO):
                 f"Intermediate{index}.txt"
             ))
             index += 1
+            thread.start()
             threading_list.append(thread)
         for thread in threading_list:
             thread.join()
