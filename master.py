@@ -1,3 +1,4 @@
+import threading
 import time
 
 from send_data_to_mapper import MapperCommunication
@@ -38,14 +39,19 @@ class Master(MapperCommunication, CustomLogging, CustomIO):
         self.log("Reducer jobs are done")
 
     def _send_input_file_address_to_mapper(self, file_path: list, number_of_reducers: int):
+        threading_list = []
         for i in range(self.number_of_mapper):
             if len(file_path[i]) > 0:
-                self.send_data_to_mapper(
-                    mapper_address=self.mapper_addresses[i],
-                    input_file_path=file_path[i],
-                    number_of_reducer=number_of_reducers
-                )
+                thread = threading.Thread(target=self.send_data_to_mapper, args=(
+                self.mapper_addresses[i],
+                file_path[i],
+                number_of_reducers
+                ))
+                thread.start()
+                threading_list.append(thread)
 
+        for thread in threading_list:
+            thread.join()
     def _send_data_to_reducer(self):
         index = 0
         for reducer_address in self.reducer_addresses:
