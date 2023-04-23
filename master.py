@@ -43,23 +43,28 @@ class Master(MapperCommunication, CustomLogging, CustomIO):
         for i in range(self.number_of_mapper):
             if len(file_path[i]) > 0:
                 thread = threading.Thread(target=self.send_data_to_mapper, args=(
-                self.mapper_addresses[i],
-                file_path[i],
-                number_of_reducers
+                    self.mapper_addresses[i],
+                    file_path[i],
+                    number_of_reducers
                 ))
                 thread.start()
                 threading_list.append(thread)
 
         for thread in threading_list:
             thread.join()
+
     def _send_data_to_reducer(self):
         index = 0
+        threading_list = []
         for reducer_address in self.reducer_addresses:
-            self.send_data_to_reducer(
-                reducer_address=reducer_address,
-                file_name_pattern=f"Intermediate{index}.txt"
-            )
+            thread = threading.Thread(target=self.send_data_to_reducer, args=(
+                reducer_address,
+                f"Intermediate{index}.txt"
+            ))
             index += 1
+            threading_list.append(thread)
+        for thread in threading_list:
+            thread.join()
 
     def _increment_round_robin_index(self):
         self._round_robin_index = (self._round_robin_index + 1) % len(self.mapper_addresses)
