@@ -1,5 +1,5 @@
 import threading
-import time
+from multiprocessing import Process
 
 from send_data_to_workers import MapperCommunication
 from reader import CustomIO
@@ -39,33 +39,34 @@ class Master(MapperCommunication, CustomLogging, CustomIO):
         self.log("Reducer jobs are done")
 
     def _send_input_file_address_to_mapper(self, file_path: list, number_of_reducers: int):
-        threading_list = []
+        process_list = []
         for i in range(self.number_of_mapper):
             if len(file_path[i]) > 0:
-                thread = threading.Thread(target=self.send_data_to_mapper, args=(
+
+                process = Process(target=self.send_data_to_mapper, args=(
                     self.mapper_addresses[i],
                     file_path[i],
                     number_of_reducers
                 ))
-                thread.start()
-                threading_list.append(thread)
+                process.start()
+                process_list.append(process)
 
-        for thread in threading_list:
-            thread.join()
+        for process in process_list:
+            process.join()
 
     def _send_data_to_reducer(self):
         index = 0
-        threading_list = []
+        process_list = []
         for reducer_address in self.reducer_addresses:
-            thread = threading.Thread(target=self.send_data_to_reducer, args=(
+            process = Process(target=self.send_data_to_reducer, args=(
                 reducer_address,
                 f"Intermediate{index}.txt"
             ))
             index += 1
-            thread.start()
-            threading_list.append(thread)
-        for thread in threading_list:
-            thread.join()
+            process.start()
+            process_list.append(process)
+        for process in process_list:
+            process.join()
 
     def _increment_round_robin_index(self):
         self._round_robin_index = (self._round_robin_index + 1) % len(self.mapper_addresses)
